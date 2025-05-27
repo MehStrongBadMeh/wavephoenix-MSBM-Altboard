@@ -1,9 +1,14 @@
 <h1 align="center">
     WavePhoenix
 </h1>
+
 <p align="center">
     An open-source implementation of the Nintendo WaveBird protocol using Silicon Labs Wireless Gecko SoCs
 </p>
+<p align="center">
+    <a href="https://discord.gg/W44D5uUq4v"><img src="https://img.shields.io/discord/1377009241654689932?style=for-the-badge&logo=discord&logoColor=%23FFFFFF&label=DISCORD&labelColor=%235865F2&color=%234954c9" alt="Discord"></a>
+</p>
+
 <p align="center">
     <img src="images/logo-animated.gif" alt="WavePhoenix" />
 </p>
