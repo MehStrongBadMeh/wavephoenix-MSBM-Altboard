@@ -267,7 +267,7 @@ static int handle_fix_device(const uint8_t *command, si_callback_fn callback, vo
   device->info[2] = wireless_id & 0xFF;
 
   // Update other device info flags
-  device->info[0] |= SI_WIRELESS_STATE;
+  device->info[0] |= SI_GC_STANDARD | SI_WIRELESS_STATE;
   device->info[1] |= SI_WIRELESS_FIX_ID;
 
   // Respond with the new device info
@@ -326,5 +326,19 @@ void si_device_gc_set_wireless_id(struct si_device_gc_controller *device, uint16
 
   // Update other device info flags
   device->info[0] |= SI_GC_STANDARD | SI_WIRELESS_RECEIVED;
+}
+
+void si_device_gc_set_wireless_origin(struct si_device_gc_controller *device, uint8_t *origin_data)
+{
+  // Check if the origin packet is different from the last known origin
+  if (memcmp(&device->origin.stick_x, origin_data, 6) != 0) {
+    // Update the origin state
+    memcpy(&device->origin.stick_x, origin_data, 6);
+
+    // Set the "need origin" flag to true so the host knows to fetch the new origin
+    device->input.buttons.need_origin = true;
+  }
+
+  // Set the "has wireless origin" flag in the device info
   device->info[1] |= SI_WIRELESS_ORIGIN;
 }
