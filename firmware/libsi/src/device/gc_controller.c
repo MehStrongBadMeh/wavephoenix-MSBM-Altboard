@@ -230,6 +230,24 @@ static int handle_long_poll(const uint8_t *command, si_callback_fn callback, voi
 }
 
 /**
+ * Handle "probe device" commands.
+ *
+ * I'm currently unclear what this command is used for. The command always seems to return
+ * 8 bytes of zeroes, regardless of the command parameters, so that's what we do here.
+ *
+ * Command:         {0x4D, 0x??, 0x??} - 2nd and 3rd bytes seem to differ every time
+ * Response:        8 bytes of zeroes.
+ */
+static int handle_probe_device(const uint8_t *command, si_callback_fn callback, void *context)
+{
+  // Respond with 8 bytes of zeroes
+  uint8_t response[8] = {0};
+  si_write_bytes(response, SI_CMD_GC_PROBE_DEVICE_RESP, callback);
+
+  return SI_CMD_GC_PROBE_DEVICE_RESP;
+}
+
+/**
  * Handle "fix device" commands, to "fix" the receiver ID to a specific controller ID.
  *
  * This is used to pair a WaveBird controller with a specific receiver.
@@ -249,7 +267,7 @@ static int handle_fix_device(const uint8_t *command, si_callback_fn callback, vo
   device->info[2] = wireless_id & 0xFF;
 
   // Update other device info flags
-  device->info[0] |= SI_WIRELESS_STATE;
+  device->info[0] |= SI_GC_STANDARD | SI_WIRELESS_STATE;
   device->info[1] |= SI_WIRELESS_FIX_ID;
 
   // Respond with the new device info
@@ -292,6 +310,7 @@ void si_device_gc_init(struct si_device_gc_controller *device, uint8_t type)
 
   // Register additional commands handled by WaveBird receivers
   if (type & SI_GC_WIRELESS) {
+    si_command_register(SI_CMD_GC_PROBE_DEVICE, SI_CMD_GC_PROBE_DEVICE_LEN, handle_probe_device, device);
     si_command_register(SI_CMD_GC_FIX_DEVICE, SI_CMD_GC_FIX_DEVICE_LEN, handle_fix_device, device);
   }
 }
@@ -307,5 +326,19 @@ void si_device_gc_set_wireless_id(struct si_device_gc_controller *device, uint16
 
   // Update other device info flags
   device->info[0] |= SI_GC_STANDARD | SI_WIRELESS_RECEIVED;
+}
+
+void si_device_gc_set_wireless_origin(struct si_device_gc_controller *device, uint8_t *origin_data)
+{
+  // Check if the origin packet is different from the last known origin
+  if (memcmp(&device->origin.stick_x, origin_data, 6) != 0) {
+    // Update the origin state
+    memcpy(&device->origin.stick_x, origin_data, 6);
+
+    // Set the "need origin" flag to true so the host knows to fetch the new origin
+    device->input.buttons.need_origin = true;
+  }
+
+  // Set the "has wireless origin" flag in the device info
   device->info[1] |= SI_WIRELESS_ORIGIN;
 }

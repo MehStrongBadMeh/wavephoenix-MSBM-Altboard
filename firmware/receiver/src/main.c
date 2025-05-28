@@ -225,14 +225,8 @@ static void handle_wavebird_packet(const uint8_t *packet)
         wavebird_origin_get_trigger_left(message), wavebird_origin_get_trigger_right(message),
     };
 
-    // Check if the origin packet is different from the last known origin
-    if (memcmp(&si_device.origin.stick_x, new_origin, 6) != 0) {
-      // Update the origin state
-      memcpy(&si_device.origin.stick_x, new_origin, 6);
-
-      // Set the "need origin" flag to true so the host knows to fetch the new origin
-      si_device.input.buttons.need_origin = true;
-    }
+    // Update the origin state in the SI device
+    si_device_gc_set_wireless_origin(&si_device, new_origin);
   }
 }
 

@@ -141,3 +141,11 @@ static inline void si_device_set_input_valid(struct si_device_gc_controller *dev
 {
   device->input_valid = valid;
 }
+
+/**
+ * Update the origin of the controller, based on an origin packet.
+ *
+ * @param device the device to set the wireless origin for
+ * @param origin_data pointer to the analog origin data (6 bytes)
+ */
+void si_device_gc_set_wireless_origin(struct si_device_gc_controller *device, uint8_t *origin_data);

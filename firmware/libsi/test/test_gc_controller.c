@@ -124,7 +124,7 @@ static void test_wavebird_info_after_set_wireless_id()
   simulate_command(&device, info_command);
 
   // Test device info response includes the controller ID
-  uint8_t expected_response[] = {0xE9, 0xA0, 0xB1};
+  uint8_t expected_response[] = {0xE9, 0x80, 0xB1};
   TEST_ASSERT_EQUAL(3, response_len);
   TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_response, response_buf, 3);
 }
@@ -149,7 +149,7 @@ static void test_wavebird_info_after_set_wireless_id_multiple()
   simulate_command(&device, info_command);
 
   // Test device info response includes the most recent controller ID
-  uint8_t expected_response[] = {0xE9, 0xE0, 0x2F};
+  uint8_t expected_response[] = {0xE9, 0xC0, 0x2F};
   TEST_ASSERT_EQUAL(3, response_len);
   TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_response, response_buf, 3);
 }
@@ -157,23 +157,83 @@ static void test_wavebird_info_after_set_wireless_id_multiple()
 // Test that the device info response is correct when fixing the wireless ID
 static void test_wavebird_info_after_fix_device()
 {
+  uint8_t info_command[] = {SI_CMD_INFO};
+
   // Initialize as a WaveBird receiver
   struct si_device_gc_controller device;
   si_device_gc_init(&device, SI_TYPE_GC | SI_GC_WIRELESS | SI_GC_NOMOTOR);
+
+  // Send an info command
+  simulate_command(&device, info_command);
+
+  // Test device info response is as expected
+  uint8_t expected_info_response[] = {0xA8, 0x00, 0x00};
+  TEST_ASSERT_EQUAL(3, response_len);
+  TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_info_response, response_buf, 3);
+
+  // Set the wireless ID (e.g. after packet reception)
   si_device_gc_set_wireless_id(&device, 0x2B1);
+
+  // Send an info command
+  simulate_command(&device, info_command);
+
+  // Test device info response is as expected
+  uint8_t expected_info_response_2[] = {0xE9, 0x80, 0xB1};
+  TEST_ASSERT_EQUAL(3, response_len);
+  TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_info_response_2, response_buf, 3);
 
   // Send a fix device command
   uint8_t fix_device_command[] = {SI_CMD_GC_FIX_DEVICE, 0x90, 0xB1};
   simulate_command(&device, fix_device_command);
 
+  // Check fix device response is as expected
+  uint8_t expected_fix_response[] = {0xEB, 0x90, 0xB1};
+  TEST_ASSERT_EQUAL(3, response_len);
+  TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_fix_response, response_buf, 3);
+
   // Send an info command
-  uint8_t info_command[] = {SI_CMD_INFO};
   simulate_command(&device, info_command);
 
   // Test device info response includes the fixed controller ID
-  uint8_t expected_response[] = {0xEB, 0xB0, 0xB1};
+  uint8_t expected_response[] = {0xEB, 0x90, 0xB1};
   TEST_ASSERT_EQUAL(3, response_len);
   TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_response, response_buf, 3);
+}
+
+// Test that the device info is correct when the console fixes the wireless ID,
+// but we have not yet received a packet from the controller
+static void test_wavebird_fix_device_without_wireless_id()
+{
+  uint8_t info_command[] = {SI_CMD_INFO};
+
+  // Initialize as a WaveBird receiver
+  struct si_device_gc_controller device;
+  si_device_gc_init(&device, SI_TYPE_GC | SI_GC_WIRELESS | SI_GC_NOMOTOR);
+
+  // Send an info command
+  simulate_command(&device, info_command);
+
+  // Test device info response is as expected
+  uint8_t expected_info_response[] = {0xA8, 0x00, 0x00};
+  TEST_ASSERT_EQUAL(3, response_len);
+  TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_info_response, response_buf, 3);
+
+  // Send a fix device command
+  uint8_t fix_device_command[] = {SI_CMD_GC_FIX_DEVICE, 0x90, 0xB1};
+  simulate_command(&device, fix_device_command);
+
+  // Check fix device response is as expected
+  uint8_t expected_fix_response[] = {0xAB, 0x90, 0xB1};
+  TEST_ASSERT_EQUAL(3, response_len);
+  TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_fix_response, response_buf, 3);
+
+  // Send an info command
+  simulate_command(&device, info_command);
+
+  // Test device info response includes the fixed controller ID
+  uint8_t expected_info_response_2[] = {0xAB, 0x90, 0xB1};
+  TEST_ASSERT_EQUAL(3, response_len);
+  TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_info_response_2, response_buf, 3);
 }
 
 // Test that setting wireless ID fails when the controller ID has already been fixed
@@ -193,6 +253,56 @@ static void test_set_wireless_id_when_fixed(void)
   TEST_ASSERT_EQUAL_HEX16(0x2B1, si_device_gc_get_wireless_id(&device));
 }
 
+static void test_set_wireless_origin(void)
+{
+  uint8_t info_command[] = {SI_CMD_INFO};
+
+  // Initialize as a WaveBird receiver
+  struct si_device_gc_controller device;
+  si_device_gc_init(&device, SI_TYPE_GC | SI_GC_WIRELESS | SI_GC_NOMOTOR);
+  si_device_gc_set_wireless_id(&device, 0x2B1);
+
+  // Send an info command
+  simulate_command(&device, info_command);
+
+  // Test device info response is as expected
+  uint8_t expected_info_response[] = {0xE9, 0x80, 0xB1};
+  TEST_ASSERT_EQUAL(3, response_len);
+  TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_info_response, response_buf, 3);
+
+  // Send a fix device command
+  uint8_t fix_device_command[] = {SI_CMD_GC_FIX_DEVICE, 0x90, 0xB1};
+  simulate_command(&device, fix_device_command);
+
+  // Send an info command
+  simulate_command(&device, info_command);
+
+  // Test device info is as expected
+  uint8_t expected_info_response_2[] = {0xEB, 0x90, 0xB1};
+  TEST_ASSERT_EQUAL(3, response_len);
+  TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_info_response_2, response_buf, 3);
+
+  // Set the wireless origin
+  uint8_t origin_data[] = {0x85, 0x86, 0x87, 0x88, 0x11, 0x12};
+  si_device_gc_set_wireless_origin(&device, origin_data);
+
+  // Check the origin state is set correctly
+  TEST_ASSERT_EQUAL_UINT8(0x85, device.origin.stick_x);
+  TEST_ASSERT_EQUAL_UINT8(0x86, device.origin.stick_y);
+  TEST_ASSERT_EQUAL_UINT8(0x87, device.origin.substick_x);
+  TEST_ASSERT_EQUAL_UINT8(0x88, device.origin.substick_y);
+  TEST_ASSERT_EQUAL_UINT8(0x11, device.origin.trigger_left);
+  TEST_ASSERT_EQUAL_UINT8(0x12, device.origin.trigger_right);
+
+  // Send an info command
+  simulate_command(&device, info_command);
+
+  // Test device info response includes the origin flag
+  uint8_t expected_info_response_3[] = {0xEB, 0xB0, 0xB1};
+  TEST_ASSERT_EQUAL(3, response_len);
+  TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_info_response_3, response_buf, 3);
+}
+
 void test_gc_controller(void)
 {
   Unity.TestFile = __FILE_NAME__;
@@ -205,4 +315,6 @@ void test_gc_controller(void)
   RUN_TEST(test_wavebird_info_after_set_wireless_id_multiple);
   RUN_TEST(test_wavebird_info_after_fix_device);
   RUN_TEST(test_set_wireless_id_when_fixed);
+  RUN_TEST(test_wavebird_fix_device_without_wireless_id);
+  RUN_TEST(test_set_wireless_origin);
 }
