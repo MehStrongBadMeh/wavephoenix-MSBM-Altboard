@@ -230,6 +230,24 @@ static int handle_long_poll(const uint8_t *command, si_callback_fn callback, voi
 }
 
 /**
+ * Handle "probe device" commands.
+ *
+ * I'm currently unclear what this command is used for. The command always seems to return
+ * 8 bytes of zeroes, regardless of the command parameters, so that's what we do here.
+ *
+ * Command:         {0x4D, 0x??, 0x??} - 2nd and 3rd bytes seem to differ every time
+ * Response:        8 bytes of zeroes.
+ */
+static int handle_probe_device(const uint8_t *command, si_callback_fn callback, void *context)
+{
+  // Respond with 8 bytes of zeroes
+  uint8_t response[8] = {0};
+  si_write_bytes(response, SI_CMD_GC_PROBE_DEVICE_RESP, callback);
+
+  return SI_CMD_GC_PROBE_DEVICE_RESP;
+}
+
+/**
  * Handle "fix device" commands, to "fix" the receiver ID to a specific controller ID.
  *
  * This is used to pair a WaveBird controller with a specific receiver.
@@ -292,6 +310,7 @@ void si_device_gc_init(struct si_device_gc_controller *device, uint8_t type)
 
   // Register additional commands handled by WaveBird receivers
   if (type & SI_GC_WIRELESS) {
+    si_command_register(SI_CMD_GC_PROBE_DEVICE, SI_CMD_GC_PROBE_DEVICE_LEN, handle_probe_device, device);
     si_command_register(SI_CMD_GC_FIX_DEVICE, SI_CMD_GC_FIX_DEVICE_LEN, handle_fix_device, device);
   }
 }
