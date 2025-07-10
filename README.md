@@ -12,7 +12,7 @@
 
 ## Motivation
 
-loopj's Wavephoenix receiver design relies on the RF-Star RF-BM-BG22C3 SoC, which quickly became out-of-stock everywhere, potentially due to people wanting them to make Wavephoenix receivers. So, I set out looking for an alternative. I ended up stumbling upon the [RF-BM-BG22A3](https://www.rfstariot.com/rf-bm-bg22a3-ble5-3-efr32bg22-module_p81.html) which utillizes the same SoC, in a slightly larger package. This means that, if wired properly, it could use the same firmware as the stock Wavephoenix board without modifications. All that was needed was an updated PCB design to utillize this alternate package, and a reworked case to fit the new PCB. The result is slightly bigger than the stock Wavephoenix, but still quite a bit smaller than the original Wavebird receiver.
+loopj's Wavephoenix receiver design relies on the RF-Star RF-BM-BG22C3 SoC, which quickly became out-of-stock everywhere, potentially due to people wanting them to make WavePhoenix receivers. So, I set out looking for an alternative. I ended up stumbling upon the [RF-BM-BG22A3](https://www.rfstariot.com/rf-bm-bg22a3-ble5-3-efr32bg22-module_p81.html) which utillizes the same SoC, in a slightly larger package. This means that, if wired properly, it could use the same firmware as the stock Wavephoenix board without modifications. All that was needed was an updated PCB design to utillize this alternate package, and a reworked case to fit the new PCB. The result is slightly bigger than the stock Wavephoenix, but still quite a bit smaller than the original Wavebird receiver.
 
 As a bonus, the pcb antenna in the RF-BM-BG22A3 has great range. I have clocked over 40 feet of range without noticing dropouts.
 
@@ -37,7 +37,7 @@ Check out the [`hardware/mini-receiver-msbm-altboard/README.md`](hardware/mini-r
 
 ## Special Thanks
 
-- [loopj](https://www.tindie.com/products/rfstariot/efr32bg22-long-range-bluetooth-wireless-module/) - for creating the original WavePhoenix firmware and hardware that this variant is based on
+- [loopj](https://github.com/loopj) - for creating the original WavePhoenix firmware and hardware that this variant is based on
 - [dwillmore](https://github.com/dwillmore) and [unicab369](https://github.com/unicab369) - for giving me a crash course in using KiCad
 
 ## License
