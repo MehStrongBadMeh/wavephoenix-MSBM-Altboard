@@ -42,6 +42,4 @@ Check out the [`hardware/mini-receiver-msbm-altboard/README.md`](hardware/mini-r
 
 ## License
 
-The firmware in this repository is licensed under the [MIT License](firmware/LICENSE).
-
 The hardware is licensed under the [Solderpad Hardware License v2.1](hardware/LICENSE).
